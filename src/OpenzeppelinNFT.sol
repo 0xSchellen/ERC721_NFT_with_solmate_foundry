@@ -1,16 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.14;
+pragma solidity 0.8.14;
 
-import "solmate/tokens/ERC721.sol";
+import "openzeppelin-contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/utils/Strings.sol";
+import "openzeppelin-contracts/security/PullPayment.sol";
 import "openzeppelin-contracts/access/Ownable.sol";
 
-error MintPriceNotPaid();
-error MaxSupply();
-error NonExistentTokenURI();
-error WithdrawTransfer();
-
-contract NFT is ERC721, Ownable {
+contract OpenZeppelinNFT is ERC721, PullPayment, Ownable {
 
     using Strings for uint256;
     string public baseURI;
@@ -27,13 +23,12 @@ contract NFT is ERC721, Ownable {
     }
 
     function mintTo(address recipient) public payable returns (uint256) {
-        if (msg.value != MINT_PRICE) {
-            revert MintPriceNotPaid();
-        }
+        require(
+            msg.value == MINT_PRICE,
+            "Transaction value did not equal the mint price"
+        );
         uint256 newTokenId = ++currentTokenId;
-        if (newTokenId > TOTAL_SUPPLY) {
-            revert MaxSupply();
-        }
+        require(newTokenId <= TOTAL_SUPPLY, "Max supply reached");
         _safeMint(recipient, newTokenId);
         return newTokenId;
     }
@@ -45,20 +40,18 @@ contract NFT is ERC721, Ownable {
         override
         returns (string memory)
     {
-        if (ownerOf(tokenId) == address(0)) {
-            revert NonExistentTokenURI();
-        }
+        require(
+            ownerOf(tokenId) != address(0),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
         return
             bytes(baseURI).length > 0
                 ? string(abi.encodePacked(baseURI, tokenId.toString()))
                 : "";
     }
 
-    function withdrawPayments(address payable payee) external onlyOwner {
-        uint256 balance = address(this).balance;
-        (bool transferTx, ) = payee.call{value: balance}("");
-        if (!transferTx) {
-            revert WithdrawTransfer();
-        }
+    /// @dev Overridden in order to make it an onlyOwner function
+    function withdrawPayments(address payable payee) public override onlyOwner {
+        super.withdrawPayments(payee);
     }
 }

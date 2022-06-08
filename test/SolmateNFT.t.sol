@@ -1,28 +1,29 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.14;
+pragma solidity >=0.8.14;
 
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {Address} from"openzeppelin-contracts/utils/Address.sol";
-import {Utilities} from "./Utilities.sol";
+import {Utilities} from "../src/Utilities.sol";
 
-import "../src/SolmateNFT.sol";
+import {ERC721, ERC721TokenReceiver} from "solmate/tokens/ERC721.sol";
+import {SolmateNFT} from "../src/SolmateNFT.sol";
 
 // import "ds-test/test.sol";
 // import "forge-std/stdlib.sol";
 // import "./interfaces/HEVM.sol";
 
-contract SolmateNftTests is Test {
+contract SolmateNFTTests is Test {
     using stdStorage for StdStorage;
 
     //Hevm private vm = Hevm(HEVM_ADDRESS);
-    SolmateNft private nft;
-    StdStorage private stdstore;
+    SolmateNFT private nft;
+    //StdStorage private stdstore;
 
     function setUp() public {
         // Deploy NFT contract
-        nft = new SolmateNft("NFT_tutorial", "TUT", "baseUri");
+        nft = new SolmateNFT("NFT_tutorial", "TUT", "baseUri");
     }
 
     function testFailNoMintPricePaid() public {
@@ -101,7 +102,7 @@ contract Receiver is ERC721TokenReceiver {
         address from,
         uint256 id,
         bytes calldata data
-    ) external returns (bytes4){
+    ) external override returns (bytes4){
         return this.onERC721Received.selector;
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.14;
 
-import {ERC721} from "solmate/tokens/ERC721.sol";
+import {ERC721, ERC721TokenReceiver} from "solmate/tokens/ERC721.sol";
 import {Strings} from "openzeppelin-contracts/utils/Strings.sol";
 import {PullPayment} from "openzeppelin-contracts/security/PullPayment.sol";
 import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
@@ -9,11 +9,10 @@ import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
-import {Address} from"openzeppelin-contracts/utils/Address.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {Utilities} from "./Utilities.sol";
 
-contract SolmateNft is ERC721, PullPayment, Ownable {
-
+contract SolmateNFT is ERC721, PullPayment, Ownable {
     using Strings for uint256;
     string public baseURI;
     uint256 public currentTokenId;
@@ -46,17 +45,14 @@ contract SolmateNft is ERC721, PullPayment, Ownable {
         override
         returns (string memory)
     {
-
-
-    // mapping(uint256 => address) internal _ownerOf;
-    // mapping(address => uint256) internal _balanceOf;
-    // function ownerOf(uint256 id) public view virtual returns (address owner) {
-    //     require((owner = _ownerOf[id]) != address(0), "NOT_MINTED");
-    // }
-
+        // mapping(uint256 => address) internal _ownerOf;
+        // mapping(address => uint256) internal _balanceOf;
+        // function ownerOf(uint256 id) public view virtual returns (address owner) {
+        //     require((owner = _ownerOf[id]) != address(0), "NOT_MINTED");
+        // }
 
         require(
-            (ownerOf(tokenId) != address(0)), 
+            (ownerOf(tokenId) != address(0)),
             "ERC721Metadata: URI query for nonexistent token"
         );
 

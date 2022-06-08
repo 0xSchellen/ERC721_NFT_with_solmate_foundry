@@ -8,8 +8,8 @@ git push origin +main
 
 rm -r .git
 forge init --force
-forge install openzeppelin/openzeppelin-contracts
-
+forge install https://github.com/openzeppelin/openzeppelin-contracts
+forge install https://github.com/Rari-Capital/solmate
 
 forge test --match-test [NAME_OF_THE_TEST_WITH_YOUR_SOLUTION] --match-contract [CONTRACT_LEVEL_NAME]
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.14;
 
 import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
@@ -9,7 +9,6 @@ interface IERC20 {
 }
 
 contract Utilities is Test {
-    //Vm internal immutable vm = Vm(HEVM_ADDRESS);
     bytes32 internal nextUser = keccak256(abi.encodePacked("user address"));
     using stdStorage for StdStorage;
     //StdStorage internal stdstore;

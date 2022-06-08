@@ -1,24 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.14;
 
-import {Test} from "forge-std/Test.sol";
-import {Utilities} from "./Utilities.sol";
+import {stdStorage, StdStorage, Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {Address} from"openzeppelin-contracts/utils/Address.sol";
+import {Utilities} from "../src/Utilities.sol";
 
-import "../src/NFT.sol";
+import {OpenZeppelinNFT} from "../src/OpenZeppelinNft.sol";
+import "openzeppelin-contracts/token/ERC721/IERC721Receiver.sol";
 
-contract NFTTest is Test {
-    //using stdStorage for StdStorage;
+contract OpenZeppelinNFTTests is Test {
+    using stdStorage for StdStorage;
 
-    //Vm private vm = Vm(HEVM_ADDRESS);
-    NFT private nft;
+    //Hevm private vm = Hevm(HEVM_ADDRESS);
+    OpenZeppelinNFT private nft;
     //StdStorage private stdstore;
 
     function setUp() public {
         // Deploy NFT contract
-        nft = new NFT("NFT_tutorial", "TUT", "baseUri");
+        nft = new OpenZeppelinNFT("NFT_tutorial", "TUT", "baseUri");
     }
 
     function testFailNoMintPricePaid() public {
@@ -29,13 +30,13 @@ contract NFTTest is Test {
         nft.mintTo{value: 0.08 ether}(address(1));
     }
 
-    // function testFailMaxSupplyReached() public {
-    //     uint256 slot = stdstore.target(address(nft)).sig("currentTokenId()").find();
-    //     bytes32 loc = bytes32(slot);
-    //     bytes32 mockedCurrentTokenId = bytes32(abi.encode(10000));
-    //     vm.store(address(nft), loc, mockedCurrentTokenId);
-    //     nft.mintTo{value: 0.08 ether}(address(1));
-    // }
+    function testFailMaxSupplyReached() public {
+        uint256 slot = stdstore.target(address(nft)).sig("currentTokenId()").find();
+        bytes32 loc = bytes32(slot);
+        bytes32 mockedCurrentTokenId = bytes32(abi.encode(10000));
+        vm.store(address(nft), loc, mockedCurrentTokenId);
+        nft.mintTo{value: 0.08 ether}(address(1));
+    }
 
     function testFailMintToZeroAddress() public {
         nft.mintTo{value: 0.08 ether}(address(0));
@@ -86,43 +87,16 @@ contract NFTTest is Test {
         vm.etch(address(1), bytes("mock code"));
         nft.mintTo{value: 0.08 ether}(address(1));
     }
-
-    function testWithdrawalWorksAsOwner() public {
-        // Mint an NFT, sending eth to the contract
-        Receiver receiver = new Receiver();
-        address payable payee = payable(address(0x1337));
-        uint256 priorPayeeBalance = payee.balance;
-        nft.mintTo{value: nft.MINT_PRICE()}(address(receiver));
-        // Check that the balance of the contract is correct
-        assertEq(address(nft).balance, nft.MINT_PRICE());
-        uint256 nftBalance = address(nft).balance;
-        // Withdraw the balance and assert it was transferred
-        nft.withdrawPayments(payee);
-        assertEq(payee.balance, priorPayeeBalance + nftBalance);
-    }
-
-    function testWithdrawalFailsAsNotOwner() public {
-        // Mint an NFT, sending eth to the contract
-        Receiver receiver = new Receiver();
-        nft.mintTo{value: nft.MINT_PRICE()}(address(receiver));
-        // Check that the balance of the contract is correct
-        assertEq(address(nft).balance, nft.MINT_PRICE());
-        // Confirm that a non-owner cannot withdraw
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.startPrank(address(0xd3ad));
-        nft.withdrawPayments(payable(address(0xd3ad)));
-        vm.stopPrank();
-    }
 }
 
-contract Receiver is ERC721TokenReceiver {
+
+contract Receiver is IERC721Receiver {
     function onERC721Received(
         address operator,
         address from,
         uint256 id,
         bytes calldata data
-    ) override external returns (bytes4){
+    ) external returns (bytes4){
         return this.onERC721Received.selector;
     }
 }
-
